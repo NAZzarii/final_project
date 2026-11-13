@@ -1,0 +1,13 @@
+@model RequestStatus
+@if (Model == RequestStatus.Accepted)
+{
+    <span class="tag tag-ok">@Icons.Get("check") Прийнято</span>
+}
+else if (Model == RequestStatus.Rejected)
+{
+    <span class="tag tag-no">@Icons.Get("x") Відхилено</span>
+}
+else
+{
+    <span class="tag tag-wait">@Icons.Get("clock") Очікує</span>
+}

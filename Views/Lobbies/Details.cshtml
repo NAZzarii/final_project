@@ -1,0 +1,142 @@
+@model LobbyDetailsVm
+@{
+    var l = Model.Lobby;
+    ViewData["Title"] = l.Title;
+}
+<a class="muted text-decoration-none d-inline-block mb-3" asp-controller="Home" asp-action="Index">← До списку лобі</a>
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="panel panel-pad lobby mb-3" data-game="@UiHelpers.Slug(l.Game!.Name)">
+            <div class="d-flex align-items-center gap-3 mb-3 big">
+                <partial name="_GameIcon" model="l.Game!" />
+                <div class="min-w-0">
+                    <div class="gname">@l.Game!.Name</div>
+                    <h1 class="ltitle h3">@l.Title</h1>
+                </div>
+            </div>
+            <div class="meta">
+                @if (l.IsOpen) { <span class="tag tag-ok">Набір відкрито</span> }
+                else { <span class="tag tag-mute">Набір закрито</span> }
+                <span class="chip @(l.HasMic ? "chip-on" : "")">@Icons.Get(l.HasMic ? "mic" : "mic-off") @(l.HasMic ? "Голос" : "Без голосу")</span>
+                <span class="chip">@Icons.Get("clock") @UiHelpers.When(l.PlayTime)</span>
+            </div>
+            <p class="pre-line">@(string.IsNullOrWhiteSpace(l.Description) ? "Опису немає." : l.Description)</p>
+            <div class="lfoot">
+                <div><partial name="_Slots" model="l" /> <span class="muted small">гравців</span></div>
+                <div class="muted small">Хост: <strong class="text-body">@l.Host!.DisplayName</strong></div>
+            </div>
+
+            @if (Model.IsHost)
+            {
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <form asp-action="ToggleOpen" asp-route-id="@l.Id" method="post">
+                        <button class="btn btn-outline-secondary btn-sm">@(l.IsOpen ? "Закрити набір" : "Відкрити набір")</button>
+                    </form>
+                    <form asp-action="Delete" asp-route-id="@l.Id" method="post" onsubmit="return confirm('Видалити лобі?');">
+                        <button class="btn btn-no btn-sm">@Icons.Get("trash") Видалити</button>
+                    </form>
+                </div>
+            }
+        </div>
+
+        @if (Model.IsHost)
+        {
+            <div class="panel panel-pad">
+                <div class="sec">Заявки (@Model.Pending.Count)</div>
+                @if (Model.Pending.Count == 0)
+                {
+                    <p class="muted mb-0">Нових заявок немає.</p>
+                }
+                @foreach (var r in Model.Pending)
+                {
+                    <div class="rowcard py-3 border-top" style="border-color: var(--line) !important">
+                        <span class="avatar">@r.User!.DisplayName.Substring(0, 1).ToUpper()</span>
+                        <div class="grow">
+                            <strong>@r.User.DisplayName</strong>
+                            <div class="small muted">@r.User.AboutMe</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <form asp-controller="Requests" asp-action="Accept" asp-route-id="@r.Id" method="post"><button class="btn btn-ok btn-sm">Прийняти</button></form>
+                            <form asp-controller="Requests" asp-action="Reject" asp-route-id="@r.Id" method="post"><button class="btn btn-no btn-sm">Відхилити</button></form>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="panel panel-pad mb-3">
+            <div class="sec">Приєднатися</div>
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <p class="muted">Увійди, щоб подати заявку.</p>
+                <a class="btn btn-primary w-100" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path">Вхід</a>
+            }
+            else if (Model.IsHost)
+            {
+                <p class="muted mb-0">Це твоє лобі.</p>
+            }
+            else if (Model.MyRequest == null)
+            {
+                if (l.IsOpen)
+                {
+                    <form asp-controller="Requests" asp-action="Apply" asp-route-lobbyId="@l.Id" method="post">
+                        <button class="btn btn-primary w-100">Подати заявку</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="muted mb-0">Набір закрито.</p>
+                }
+            }
+            else
+            {
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Твоя заявка</span>
+                    <partial name="_StatusBadge" model="Model.MyRequest.Status" />
+                </div>
+                @if (Model.MyRequest.Status == RequestStatus.Pending)
+                {
+                    <form asp-controller="Requests" asp-action="Cancel" asp-route-id="@Model.MyRequest.Id" method="post" class="mt-3">
+                        <button class="btn btn-outline-secondary btn-sm w-100">Скасувати заявку</button>
+                    </form>
+                }
+            }
+        </div>
+
+        <div class="panel panel-pad mb-3">
+            <div class="sec">Команда</div>
+            <div class="contact-line"><span class="avatar">@l.Host!.DisplayName.Substring(0, 1).ToUpper()</span> <span>@l.Host.DisplayName <span class="muted small">хост</span></span></div>
+            @foreach (var r in Model.Accepted)
+            {
+                <div class="contact-line"><span class="avatar">@r.User!.DisplayName.Substring(0, 1).ToUpper()</span>
+                    <span>@r.User.DisplayName
+                        @if (Model.IsHost && !string.IsNullOrWhiteSpace(r.User.DiscordTag)) { <span class="muted small">· @r.User.DiscordTag</span> }
+                    </span>
+                </div>
+            }
+            @if (Model.Accepted.Count == 0) { <div class="muted small pt-2">Поки нікого не прийнято.</div> }
+        </div>
+
+        <div class="panel panel-pad">
+            <div class="sec">Контакти</div>
+            @if (Model.CanSeeContacts)
+            {
+                @if (!string.IsNullOrWhiteSpace(l.ContactLink))
+                {
+                    <div class="contact-line">@Icons.Get("link")
+                        @if (UiHelpers.IsHttp(l.ContactLink)) { <a href="@l.ContactLink" target="_blank" rel="noopener noreferrer">@l.ContactLink</a> }
+                        else { <span>@l.ContactLink</span> }
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(l.Host.DiscordTag)) { <div class="contact-line">Discord: <strong>@l.Host.DiscordTag</strong></div> }
+                @if (UiHelpers.IsHttp(l.Host.SteamLink)) { <div class="contact-line"><a href="@l.Host.SteamLink" target="_blank" rel="noopener noreferrer">Steam хоста</a></div> }
+            }
+            else
+            {
+                <p class="muted mb-0">@Icons.Get("lock") Контакти хоста з'являться після того, як він прийме твою заявку.</p>
+            }
+        </div>
+    </div>
+</div>

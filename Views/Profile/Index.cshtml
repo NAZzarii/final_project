@@ -1,0 +1,33 @@
+@model ApplicationUser
+@{
+    ViewData["Title"] = "Профіль";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="panel panel-pad">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="avatar avatar-lg">@Model.DisplayName.Substring(0, 1).ToUpper()</div>
+                <div class="min-w-0">
+                    <h1 class="h3 mb-0">@Model.DisplayName</h1>
+                    <div class="muted text-truncate">@Model.Email</div>
+                </div>
+            </div>
+            <div class="meta">
+                <span class="chip">Моїх лобі: @ViewBag.LobbyCount</span>
+                <span class="chip">Заявок: @ViewBag.RequestCount</span>
+            </div>
+            <div class="contact-line"><span class="muted">Discord</span> <strong>@(string.IsNullOrWhiteSpace(Model.DiscordTag) ? "не вказано" : Model.DiscordTag)</strong></div>
+            <div class="contact-line"><span class="muted">Steam</span>
+                @if (UiHelpers.IsHttp(Model.SteamLink)) { <a href="@Model.SteamLink" target="_blank" rel="noopener noreferrer">відкрити профіль</a> }
+                else { <strong>не вказано</strong> }
+            </div>
+            <div class="py-2"><div class="muted mb-1">Про себе</div><div class="pre-line">@(string.IsNullOrWhiteSpace(Model.AboutMe) ? "не вказано" : Model.AboutMe)</div></div>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a class="btn btn-primary" asp-action="Edit">Редагувати контакти</a>
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
+                    <button type="submit" class="btn btn-outline-secondary">@Icons.Get("logout") Вийти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

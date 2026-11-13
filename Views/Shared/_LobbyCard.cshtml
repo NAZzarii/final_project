@@ -1,0 +1,23 @@
+@model Lobby
+@{
+    var desc = Model.Description is { Length: > 100 } d ? d[..100] + "…" : Model.Description;
+}
+<article class="panel lobby h-100" data-game="@UiHelpers.Slug(Model.Game!.Name)">
+    <div class="d-flex gap-3 align-items-center">
+        <partial name="_GameIcon" model="Model.Game!" />
+        <div class="min-w-0">
+            <div class="gname">@Model.Game!.Name</div>
+            <h3 class="ltitle">@Model.Title</h3>
+        </div>
+    </div>
+    <p class="ldesc">@desc</p>
+    <div class="meta">
+        <span class="chip @(Model.HasMic ? "chip-on" : "")">@Icons.Get(Model.HasMic ? "mic" : "mic-off") @(Model.HasMic ? "Голос" : "Без голосу")</span>
+        <span class="chip">@Icons.Get("clock") @UiHelpers.When(Model.PlayTime)</span>
+    </div>
+    <div class="lfoot">
+        <div><partial name="_Slots" model="Model" /></div>
+        <a class="go stretched-link" asp-controller="Lobbies" asp-action="Details" asp-route-id="@Model.Id">Детальніше @Icons.Get("arrow")</a>
+    </div>
+    <div class="lhost">Хост: @Model.Host?.DisplayName</div>
+</article>

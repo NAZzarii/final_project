@@ -1,0 +1,15 @@
+@model Lobby
+@{
+    var total = Model.PlayersNeeded;
+    var filled = Math.Min(Model.FilledSlots, total);
+}
+@if (total <= 10)
+{
+    <span class="pips" title="Зайнято @filled із @total">
+        @for (var i = 0; i < total; i++)
+        {
+            <i class="pip @(i < filled ? "on" : "")"></i>
+        }
+    </span>
+}
+<span class="slot-text">@filled/@total</span>

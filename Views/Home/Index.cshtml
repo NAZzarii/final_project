@@ -1,0 +1,56 @@
+@model List<Lobby>
+@{
+    ViewData["Title"] = "Знайди команду";
+    var games = (List<Game>)ViewBag.Games;
+    int? sel = ViewBag.SelectedGameId;
+    int accepted = ViewBag.AcceptedCount;
+    var free = Model.Sum(l => Math.Max(0, l.PlayersNeeded - l.FilledSlots));
+    var authed = User.Identity?.IsAuthenticated == true;
+}
+
+<div class="mb-3">
+    <h1 class="h-title">Відкриті лобі</h1>
+    <div class="muted">Лобі: @Model.Count · вільних місць: @free</div>
+</div>
+
+@if (!authed)
+{
+    <div class="panel mb-4 d-flex flex-wrap align-items-center gap-3">
+        <div class="flex-grow-1">Створи лобі або подай заявку. Хост сам вирішує, з ким грати, і лише тоді відкриває свої контакти.</div>
+        <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Приєднатися</a>
+    </div>
+}
+
+@if (accepted > 0)
+{
+    <div class="notice ok">@Icons.Get("check") <span>Вашу заявку прийнято (лобі: @accepted). <a asp-controller="Requests" asp-action="My">Подивитися контакти</a></span></div>
+}
+
+<div class="fchips mb-3">
+    <a class="fchip @(sel == null ? "on" : "")" asp-action="Index">Усі ігри</a>
+    @foreach (var g in games)
+    {
+        <a class="fchip @(sel == g.Id ? "on" : "")" data-game="@UiHelpers.Slug(g.Name)" asp-action="Index" asp-route-gameId="@g.Id">
+            @if (!string.IsNullOrWhiteSpace(g.ImageUrl)) { <img src="@g.ImageUrl" alt="" /> }
+            @g.Name
+        </a>
+    }
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="panel text-center py-5">
+        <h3>Тут поки тихо</h3>
+        <p class="muted mb-3">Відкритих лобі немає. Створи перше та збери команду.</p>
+        @if (authed) { <a class="btn btn-primary" asp-controller="Lobbies" asp-action="Create">Створити лобі</a> }
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+        @foreach (var lobby in Model)
+        {
+            <div class="col"><partial name="_LobbyCard" model="lobby" /></div>
+        }
+    </div>
+}

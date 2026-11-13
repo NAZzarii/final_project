@@ -1,0 +1,9 @@
+@model Game
+@if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+{
+    <img src="@Model.ImageUrl" alt="" class="gicon" loading="lazy" />
+}
+else
+{
+    <div class="gicon gicon-fb">@Model.Name.Substring(0, 1).ToUpper()</div>
+}

@@ -1,0 +1,39 @@
+@model List<Lobby>
+@{
+    ViewData["Title"] = "Мої лобі";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h-title">Мої лобі</h1>
+    <a class="btn btn-primary d-none d-lg-inline-flex" asp-action="Create">Створити</a>
+</div>
+@if (Model.Count == 0)
+{
+    <div class="panel text-center py-5">
+        <p class="muted mb-3">Ти ще не створив жодного лобі.</p>
+        <a class="btn btn-primary" asp-action="Create">Створити лобі</a>
+    </div>
+}
+else
+{
+    <div class="d-grid gap-3">
+    @foreach (var l in Model)
+    {
+        var pending = l.Requests.Count(r => r.Status == RequestStatus.Pending);
+        <div class="panel lobby" data-game="@UiHelpers.Slug(l.Game!.Name)">
+            <div class="rowcard">
+                <partial name="_GameIcon" model="l.Game!" />
+                <div class="grow">
+                    <div class="gname">@l.Game!.Name</div>
+                    <div class="ltitle">@l.Title</div>
+                    <div class="mt-1"><partial name="_Slots" model="l" /></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    @if (pending > 0) { <span class="tag tag-wait">Нових заявок: @pending</span> }
+                    @if (l.IsOpen) { <span class="tag tag-ok">Відкрите</span> } else { <span class="tag tag-mute">Закрите</span> }
+                    <a class="btn btn-outline-secondary btn-sm stretched-link" asp-action="Details" asp-route-id="@l.Id">Відкрити</a>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+}

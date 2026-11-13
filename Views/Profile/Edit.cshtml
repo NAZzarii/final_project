@@ -1,0 +1,32 @@
+@model ProfileEditVm
+@{
+    ViewData["Title"] = "Редагувати профіль";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <h1 class="h-title mb-3">Мої контакти</h1>
+        <div class="panel panel-pad">
+            <form asp-action="Edit" method="post">
+                <div class="mb-3">
+                    <label asp-for="DiscordTag" class="form-label"></label>
+                    <input asp-for="DiscordTag" class="form-control" placeholder="Nickname#1234 або @@user" />
+                    <span asp-validation-for="DiscordTag" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="SteamLink" class="form-label"></label>
+                    <input asp-for="SteamLink" class="form-control" placeholder="https://steamcommunity.com/id/..." />
+                    <span asp-validation-for="SteamLink" class="text-danger"></span>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="AboutMe" class="form-label"></label>
+                    <textarea asp-for="AboutMe" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="AboutMe" class="text-danger"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary">Зберегти</button>
+                    <a class="btn btn-outline-secondary" asp-action="Index">Назад</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
